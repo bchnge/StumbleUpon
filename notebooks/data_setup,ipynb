@@ -1,0 +1,174 @@
+{
+ "metadata": {
+  "name": "Untitled0"
+ },
+ "nbformat": 3,
+ "nbformat_minor": 0,
+ "worksheets": [
+  {
+   "cells": [
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "import numpy as np\n",
+      "import pandas as pd\n",
+      "import sklearn.linear_model as linear\n",
+      "import sklearn.ensemble as ens\n",
+      "import sklearn.metrics as metrics\n",
+      "import sklearn.cross_validation as cv\n",
+      "import StumbleUpon.src.model_evaluation as me\n",
+      "import sklearn.feature_selection as fs"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 1
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "df_train = pd.read_csv('../data/raw/train.tsv', sep = '\\t')\n",
+      "df_test = pd.read_csv('../data/raw/test.tsv', sep = '\\t')"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 2
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "df_train.columns"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [
+      {
+       "output_type": "pyout",
+       "prompt_number": 3,
+       "text": [
+        "Index([url, urlid, boilerplate, alchemy_category, alchemy_category_score, avglinksize, commonlinkratio_1, commonlinkratio_2, commonlinkratio_3, commonlinkratio_4, compression_ratio, embed_ratio, framebased, frameTagRatio, hasDomainLink, html_ratio, image_ratio, is_news, lengthyLinkDomain, linkwordscore, news_front_page, non_markup_alphanum_characters, numberOfLinks, numwords_in_url, parametrizedLinkRatio, spelling_errors_ratio, label], dtype=object)"
+       ]
+      }
+     ],
+     "prompt_number": 3
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "clf = linear.LogisticRegression(random_state=1)"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 4
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "clfs = [ens.RandomForestClassifier(), ens.GradientBoostingClassifier(n_estimators= 600), ens.GradientBoostingClassifier(), linear.LogisticRegression()]"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 18
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "x = df_train.filter(regex = 'commonlinkratio_*|html_ratio|image_ratio|numwords_in_url')\n",
+      "y = df_train.label"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 23
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "me.ensembleEvaluate(10, x, y, clfs)"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [
+      {
+       "output_type": "pyout",
+       "prompt_number": 24,
+       "text": [
+        "[0.61710526315789482,\n",
+        " 0.57938596491228078,\n",
+        " 0.64078947368421046,\n",
+        " 0.60445906432748542,\n",
+        " 0.58589181286549707,\n",
+        " 0.63120785693345061,\n",
+        " 0.58044928173556143,\n",
+        " 0.60787892113749631,\n",
+        " 0.59225666959835832,\n",
+        " 0.59293358745052038]"
+       ]
+      }
+     ],
+     "prompt_number": 24
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "rfecv = fs.RFECV(estimator = clf, step = 1, cv = cv.StratifiedKFold(y,4), scoring='accuracy').fit(x,y)"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [],
+     "prompt_number": 25
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [
+      "figure()\n",
+      "xlabel(\"Number of features selected\")\n",
+      "ylabel(\"Cross validation score (nb of misclassifications)\")\n",
+      "plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)\n",
+      "show()\n",
+      "\n",
+      "print rfecv.n_features_\n",
+      "print rfecv.grid_scores_\n",
+      "print rfecv.support_"
+     ],
+     "language": "python",
+     "metadata": {},
+     "outputs": [
+      {
+       "output_type": "stream",
+       "stream": "stdout",
+       "text": [
+        "1\n",
+        "[ 0.74014004  0.73869714  0.73815572  0.73310795  0.73130546  0.73256692\n",
+        "  0.73545282]\n",
+        "[False False  True False False False False]\n"
+       ]
+      }
+     ],
+     "prompt_number": 26
+    },
+    {
+     "cell_type": "code",
+     "collapsed": false,
+     "input": [],
+     "language": "python",
+     "metadata": {},
+     "outputs": []
+    }
+   ],
+   "metadata": {}
+  }
+ ]
+}
