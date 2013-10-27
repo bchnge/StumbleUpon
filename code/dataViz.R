@@ -9,9 +9,9 @@ test = ddply(.data = dfTrain, .variables=c('alchemy_category'),
 )
 
 cat_eg = ddply(.data = dfTrain, .variables=c('alchemy_category'),
-            NROW,
-            summarize,
-             evergreen = mean(label, na.rm=F)
+             summarize,
+             evergreen = mean(label, na.rm=F),
+             freq = length(alchemy_category)
 )
 
 write.table(cat_eg, file = 'cat_eg.tsv', sep = '\t', row.names = F)
