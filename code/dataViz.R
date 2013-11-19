@@ -3,7 +3,7 @@ setwd('~/Projects/StumbleUpon/')
 require(ggplot2)
 require(plyr)
 
-dfTrain <- read.table(file = 'train.tsv', sep = '\t', header=T,stringsAsFactors=F)
+dfTrain <- read.table(file = 'data/train.tsv', sep = '\t', header=T,stringsAsFactors=F)
 
 require(tm)
 require(Snowball)
@@ -12,7 +12,9 @@ require(wordcloud)
 ### WORD CLOUDS
 
 corpus2dtm <- function(df){
-  corpus <- Corpus(VectorSource(df$boilerplate))
+  require(tm)
+  require(Snowball)
+  corpus <- Corpus(VectorSource(dfTrain$boilerplate))
   corpus <- tm_map(corpus, tolower)
   corpus <- tm_map(corpus, removePunctuation)
   corpus <- tm_map(corpus, removeNumbers)

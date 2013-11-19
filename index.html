@@ -1,98 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>D3 Test</title>
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    </head>
-    <body>
-<script type="text/javascript">
-        
-    var dataset;  //Global variable
-    var w = 1000;
-    var h = 1600;
-    var svg = d3.select('body')
-                .append('svg')
-                .attr('width', w)
-                .attr('height',h)
-                .attr('fill', 'black');
-            
-    d3.tsv("cat_eg.tsv", function(data) {
-        dataset = data;    //Once loaded, copy to dataset.
-        animate();
-    });    
-         
-        
-        
-        
-        
-        
-        
-        
-    function animate(){
-        svg.selectAll('circle')
-            .data(dataset)
-            .enter()
-            .append('circle')            
-                .attr('cx', w/8)
-                .attr('cy', function(d, i){return (i*h/dataset.length) + 130;})
-                .attr('r', function(d,i){return d.freq/30;
-                    })
-                .attr('fill', function(d){
-                    if(d.evergreen<33/100) {return 'red'}
-                    else if (d.evergreen<66/100) {return 'yellow'}
-                    else {return 'green'}
-                    ;})                    
-                .style('stroke', 'black')
-                .style('stroke-width',2)
-                .on('mousedown', focus)
-        ;
-        
-        svg.selectAll('text.counts')
-            .data(dataset)
-            .enter()
-            .append('text')
-            .attr('class','counts')
-            .text(function(d){return d.freq;})
-                .attr('x', w/1.5)
-                .attr('y', function(d, i){return i*h/dataset.length + 130;})
-                .attr('text-anchor', 'middle')
-                .attr('fill', 'black')
-                .attr("dy", ".35em")
-                .attr("font-size","20px")
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+    <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js?1.29.1"></script>
+    <style type="text/css">
 
-                .attr('font-family', 'sans-serif')
-        svg.selectAll('text.cat')
-            .data(dataset)
-            .enter()
-            .append('text')
-            .attr('class','cat')
-            .text(function(d){return d.alchemy_category;})
-                .attr('x', w/2.5)
-                .attr('y', function(d, i){return (i*h/dataset.length) + 130;})
-                .attr('text-anchor', 'middle')
-                .attr('fill', 'black')
-                .attr("dy", ".35em")
-                .attr("font-size","20px")
-                .attr('font-family', 'sans-serif')
-                .style("font-weight", "bold")
-        ;
-    };    
-    
-    
-    
-    function focus(){
-        d3.select(this).transition()
-                .delay(10)
-                .duration(1000)
-                .attr('cx', function(){
-                    if(d3.select(this).attr('cx')<w/2) {return d3.select(this).attr('cx') * 5.3}
-                    else {return d3.select(this).attr('cx') / 5.3};
-                })
+html, body, #map {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.stations, .stations svg {
+  position: absolute;
+}
+
+.stations svg {
+  width: 60px;
+  height: 20px;
+  padding-right: 100px;
+  font: 10px sans-serif;
+}
+
+.stations circle {
+  fill: brown;
+  stroke: black;
+  stroke-width: 1.5px;
+}
+
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script type="text/javascript">
+
+// Create the Google Map…
+var map = new google.maps.Map(d3.select("#map").node(), {
+  zoom: 10,
+  center: new google.maps.LatLng(40.78678,-74.007066),
+  mapTypeId: google.maps.MapTypeId.TERRAIN
+});
+
+// Load the station data. When the data comes back, create an overlay.
+d3.json("stations.json", function(data) {
+  var overlay = new google.maps.OverlayView();
+
+  // Add the container when the overlay is added to the map.
+  overlay.onAdd = function() {
+    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+        .attr("class", "stations");
+
+    // Draw each marker as a separate SVG element.
+    // We could use a single SVG, but what size would it have?
+    overlay.draw = function() {
+      var projection = this.getProjection(),
+          padding = 10;
+
+      var marker = layer.selectAll("svg")
+          .data(d3.entries(data))
+          .each(transform) // update existing markers
+        .enter().append("svg:svg")
+          .each(transform)
+          .attr("class", "marker");
+
+      // Add a circle.
+      marker.append("svg:circle")
+          .attr("r", 4.5)
+          .attr("cx", padding)
+          .attr("cy", padding);
+
+      // Add a label.
+      marker.append("svg:text")
+          .attr("x", padding + 7)
+          .attr("y", padding)
+          .attr("dy", ".31em")
+          .text(function(d) { return d.key; });
+
+      function transform(d) {
+        d = new google.maps.LatLng(d.value[1], d.value[0]);
+        d = projection.fromLatLngToDivPixel(d);
+        return d3.select(this)
+            .style("left", (d.x - padding) + "px")
+            .style("top", (d.y - padding) + "px");
+      }
     };
-        
-        
-            
-</script>
-    </body>
-</html>     
+  };
+
+  // Bind our overlay to the map…
+  overlay.setMap(map);
+});
+
+    </script>
+  </body>
+</html>
