@@ -1,4 +1,7 @@
 StumbleUpon
 ===========
+Kaggle competition for W4242 in Fall 2013
 
-StumbleUpon challenge
+Note
+----------------------------
+Latest models used can be found notebooks/runModelXX.ipynb

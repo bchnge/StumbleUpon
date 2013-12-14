@@ -44,7 +44,6 @@ dfTest$title <- sapply(dfTest$title, tolower)
 
 dfTest$titleBody <- do.call(paste, c(dfTest[c('title', 'body')], sep = ""))
 
-
 containsTEXT <- function(row,TEXT, Count = FALSE){
   # This function allows us to find and optionally count the instances of a certain phrase in a document
   require(stringr)
